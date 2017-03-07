@@ -73,7 +73,7 @@ def autoencoder(input_shape=[None, 784],
         encoder.append(W)
         output = lrelu(
             tf.add(tf.nn.conv2d(
-                current_input, W, strides=[1, 2, 2, 1], padding='SAME'), b))
+                current_input, W, strides=[1, 4, 4, 1], padding='SAME'), b))
         current_input = output
 
     # %%
@@ -91,7 +91,7 @@ def autoencoder(input_shape=[None, 784],
             tf.nn.conv2d_transpose(
                 current_input, W,
                 tf.pack([tf.shape(x)[0], shape[1], shape[2], shape[3]]),
-                strides=[1, 2, 2, 1], padding='SAME'), b))
+                strides=[1, 4, 4, 1], padding='SAME'), b))
         current_input = output
 
     # %%
@@ -119,7 +119,7 @@ def ConvAutocoder():
     mean_img = np.mean(data, axis=0)
     
     # create autoencoder
-    ae = autoencoder([None, 445, 402, 3], [3, 10], [3, 3])
+    ae = autoencoder([None, 445, 402, 3], [3, 10], [16, 16])
     learning_rate = 0.3
     optimizer = tf.train.AdamOptimizer(learning_rate).minimize(ae['cost'])
 
@@ -130,7 +130,7 @@ def ConvAutocoder():
     
     # save model
     saver = tf.train.Saver()
-    saver.restore(sess, './convEncoder95.tfmodel')
+    saver.restore(sess, './convEncoder299.tfmodel')
     # %%
     # Fit all training data
     batch_size = 100

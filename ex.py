@@ -73,7 +73,7 @@ def autoencoder(input_shape=[None, 784],
         encoder.append(W)
         output = lrelu(
             tf.add(tf.nn.conv2d(
-                current_input, W, strides=[1, 2, 2, 1], padding='SAME'), b))
+                current_input, W, strides=[1, 4, 4, 1], padding='SAME'), b))
         current_input = output
 
     # %%
@@ -91,7 +91,7 @@ def autoencoder(input_shape=[None, 784],
             tf.nn.conv2d_transpose(
                 current_input, W,
                 tf.pack([tf.shape(x)[0], shape[1], shape[2], shape[3]]),
-                strides=[1, 2, 2, 1], padding='SAME'), b))
+                strides=[1, 4, 4, 1], padding='SAME'), b))
         current_input = output
 
     # %%
@@ -114,34 +114,30 @@ def ConvAutocoder():
     
     # load data
     import scipy.io as scio
-    data = scio.loadmat('/scratch/data2mat2.mat')
+    data = scio.loadmat('../Crawler/data2mat.mat')
     data = data['dataset']
     mean_img = np.mean(data, axis=0)
     
     # create autoencoder
-    ae = autoencoder([None, 445, 402, 3], [3, 10], [3, 3])
-    learning_rate = 0.3
+    ae = autoencoder([None, 445, 402, 3], [3, 10, 10, 10], [16, 16, 16, 16])
+    learning_rate = 0.01
     optimizer = tf.train.AdamOptimizer(learning_rate).minimize(ae['cost'])
 
     # %%
     # We create a session to use the graph
     sess = tf.Session()
     sess.run(tf.initialize_all_variables())
-    
-    # save model
-    saver = tf.train.Saver()
-    saver.restore(sess, './convEncoder95.tfmodel')
+
     # %%
     # Fit all training data
     batch_size = 100
-    n_epochs = 100
+    n_epochs = 300
     for epoch_i in range(n_epochs):
         for batch_i in range(data.shape[0] // batch_size):
             batch_xs = data[batch_i * batch_size:batch_i * batch_size + batch_size, ...]
             train = np.array([img - mean_img for img in batch_xs])
             sess.run(optimizer, feed_dict={ae['x']: train})
         print(epoch_i, sess.run(ae['cost'], feed_dict={ae['x']: train}))
-        saver.save(sess, './convEncoder' + str(epoch_i) + '.tfmodel')
 
     # %%
     # Plot example reconstructions
@@ -158,7 +154,7 @@ def ConvAutocoder():
             np.reshape(
                 np.reshape(recon[example_i, ...], (445, 402, 3)) + mean_img,
                 (445, 402, 3)))
-    savefig('./result2.jpg')
+    savefig('./aaa.jpg')
 
 
 # %%
